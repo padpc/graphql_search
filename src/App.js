@@ -48,8 +48,8 @@ class  App extends Component {
               if(loading) return 'Loading...'
               if(error) return `Error! ${error.message}`
 
-              console.log({data})
-              return <div></div>
+              console.log(data.search)
+              return <h2>GitHub Repositories Search Results - {data.search.repositoryCount} Repositories</h2>
             }
           }
         </Query>
