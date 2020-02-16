@@ -48,8 +48,29 @@ class  App extends Component {
               if(loading) return 'Loading...'
               if(error) return `Error! ${error.message}`
 
+              const search = data.search
+              const repositoryCount = search.repositoryCount
+              const repositoryUnit = repositoryCount === 1 ? 'Repository' : 'Repositories'
+              const title = `GitHub Repositories Search Results - ${repositoryCount} ${repositoryUnit}`
               console.log(data.search)
-              return <h2>GitHub Repositories Search Results - {data.search.repositoryCount} Repositories</h2>
+              return (
+              <React.Fragment>
+                <h2>{title}</h2>
+                <ul>
+                  {
+                    search.edges.map((edge,index) => {
+                      const node = edge.node
+                      return (
+                        <li key={index}>
+                          <a href={node.url} target="_blank" rel="noopener noreferrer" >{node.name}</a>
+                        </li>
+                      )
+                    })
+                  }
+                </ul>
+              </React.Fragment>
+               
+              ) 
             }
           }
         </Query>
