@@ -12,11 +12,29 @@ const StarButton = props => {
     return(
       <button
         onClick={
-          () => {
-            addOrRemoveStar({
-              variables: {input: {starrableId:node.id}}
-            })
-          }
+          () => addOrRemoveStar({
+              variables: {input: {starrableId:node.id}},
+              updata: (store,{ data: { addStar, removeStar}}) => {
+                const {starrable} = addStar || removeStar
+                console.log(starrable)
+                const data = store.readQuery({
+                query:SERCH_REPOSITORIES,
+                variables:{query,first,last,after,before}
+              })
+              const edges = data.search.edges
+              const newEdges = edges.map (edge => {
+                if(edge.node.id === node.id){
+                  const totalCount = edge.node.stargazers.totalCount
+                  const diff = starrable.viewerHasStarred ? 1 : -1
+                  const newTotalCount = totalCount + diff
+                  edge.node.stargazers.totalCount = newTotalCount
+                }
+                return edge
+              })
+              data.search.edges = newEdges
+              store.writeQuery({query:SERCH_REPOSITORIES,data})
+            }
+          })
         }
       >
         {starCount} | {viewerHasStarred ? 'starred' : '-'}
@@ -27,17 +45,6 @@ const StarButton = props => {
   return(
     <Mutation 
       mutation={viewerHasStarred ? REMOVE_STAR : ADD_STAR}
-      refetchQueries={ mutationResult => {
-        console.log({mutationResult})
-        return [
-        [
-            {
-              query:SERCH_REPOSITORIES,
-              variables: {query,first,last,before,after}
-            }
-          ]
-        ]
-      }}
     >
     {
       addOrRemoveStar => <StarStatus  addOrRemoveStar={addOrRemoveStar}/>
@@ -114,7 +121,6 @@ class  App extends Component {
               const repositoryCount = search.repositoryCount
               const repositoryUnit = repositoryCount === 1 ? 'Repository' : 'Repositories'
               const title = `GitHub Repositories Search Results - ${repositoryCount} ${repositoryUnit}`
-              console.log(data.search)
               return (
               <React.Fragment>
                 <h2>{title}</h2>
